@@ -85,15 +85,17 @@ const (
 	DatabaseAdminPasswordKey = "AdminPassword"
 )
 
-// Database -
+// Database - a facade on top of the combination of a MariaDBDatabase
+// and MariaDBAccount pair
 type Database struct {
 	database         *MariaDBDatabase
 	account          *MariaDBAccount
 	databaseHostname string
 	databaseName     string
-	databaseUser     string
-	secret           string
+	databaseUser     string // legacy; will go away when operators fully integrate MariaDBAccount
+	secret           string // legacy; will go away when operators fully integrate MariaDBAccount
 	labels           map[string]string
 	name             string
+	accountName      string
 	namespace        string
 }
