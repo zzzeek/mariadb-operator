@@ -15,6 +15,7 @@ package helpers
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -215,4 +216,31 @@ func (tc *TestHelper) SimulateMariaDBAccountCompleted(name types.NamespacedName)
 	}, tc.Timeout, tc.Interval).Should(gomega.Succeed())
 
 	tc.Logger.Info("Simulated DB Account completed", "on", name)
+}
+
+// CreateMariaDBAccount creates and persists a MariaDBAccount resource and
+// associated Secret in the Kubernetes cluster
+func (tc *TestHelper) CreateMariaDBAccount(name types.NamespacedName) (*mariadbv1.MariaDBAccount, *corev1.Secret) {
+	secret := tc.CreateSecret(
+		types.NamespacedName{Namespace: name.Namespace, Name: fmt.Sprintf("%s-db-secret", name.Name)},
+		map[string][]byte{
+			"DatabasePassword": []byte(fmt.Sprintf("%s123", name.Name)),
+		},
+	)
+
+	instance := &mariadbv1.MariaDBAccount{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name.Name,
+			Namespace: name.Namespace,
+		},
+		Spec: mariadbv1.MariaDBAccountSpec{
+			UserName: fmt.Sprintf("%s_account", name.Name),
+			Secret:   fmt.Sprintf("%s-db-secret", name.Name),
+		},
+	}
+	gomega.Eventually(func(g gomega.Gomega) {
+		g.Expect(tc.K8sClient.Create(tc.Ctx, instance)).Should(gomega.Succeed())
+	}, tc.Timeout, tc.Interval).Should(gomega.Succeed())
+
+	return instance, secret
 }

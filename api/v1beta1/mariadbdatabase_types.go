@@ -85,7 +85,8 @@ const (
 	DatabaseAdminPasswordKey = "AdminPassword"
 )
 
-// Database -
+// Database - a facade on top of the combination of a MariaDBDatabase
+// and MariaDBAccount pair
 type Database struct {
 	database         *MariaDBDatabase
 	account          *MariaDBAccount
@@ -95,5 +96,6 @@ type Database struct {
 	secret           string
 	labels           map[string]string
 	name             string
+	accountName      string
 	namespace        string
 }
